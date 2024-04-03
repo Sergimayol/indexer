@@ -10,3 +10,6 @@ project/**
 .bloop/**
 .bsp/**
 *.db
+
+!project/build.properties
+!project/plugins.sbt

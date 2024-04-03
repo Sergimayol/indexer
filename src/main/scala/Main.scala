@@ -15,7 +15,13 @@ object Main {
     }
 
     val queue = new ConcurrentLinkedQueue[String]()
-    val explorerWorker = new ExplorerWorker(".", queue, DEBUG)
+    val root = if (args.length > 0) args(0) else "."
+    if (!Files.exists(Paths.get(root))) {
+      println(s"[ERROR] Directory $root does not exist")
+      return
+    }
+    println(s"[INFO] Root directory: $root")
+    val explorerWorker = new ExplorerWorker(root, queue, DEBUG)
     val indexers = (1 to WORKERS).map(_ => new IndexWorker(queue, DEBUG))
 
     val startTimestamp = System.currentTimeMillis()
@@ -30,7 +36,9 @@ object Main {
     val duration = endTimestamp - startTimestamp
     println(s"[INFO] Indexing completed in $duration ms")
 
-    val dbPath = Paths.get("indexer.db")
+    val dbName = if (args.length > 1) args(1) else "indexer.db"
+    val dbPath = Paths.get(dbName)
+    println(s"[INFO] SQLite database path: $dbPath")
     val db = new DB(dbPath)
     try {
       db.createTable
@@ -50,6 +58,7 @@ object Main {
       }
       db.close
     }
+    println(s"[INFO] Indexed directory: $root (recursive) to $dbPath")
   }
 
 }
