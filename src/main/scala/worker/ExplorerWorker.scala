@@ -19,7 +19,7 @@ class ExplorerWorker(rootPath: String, queue: ConcurrentLinkedQueue[String], deb
         }
       })
     } catch {
-      case e: Exception => println(s"[ERROR] ${e.getMessage}")
+      case e: Exception => if (debug >= 1) println(s"[ERROR] ${e.getMessage}")
     }
   }
 

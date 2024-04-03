@@ -19,9 +19,9 @@ class IndexWorker(queue: ConcurrentLinkedQueue[String], debug: Int) extends Thre
     try {
       return Files.readAllLines(Paths.get(file)).asScala
     } catch {
-      case fileNotFound: NoSuchFileException => println(s"[ERROR] File not found: $file")
+      case fileNotFound: NoSuchFileException => if (debug >= 1) println(s"[ERROR] File not found: $file")
       // Thrown when the files is not readable (.zip, .tar, etc.)
-      case e: Exception => println(s"[ERROR] Error reading file: $file")
+      case e: Exception => if (debug >= 1) println(s"[ERROR] Error reading file: $file")
     }
     return Buffer()
   }
@@ -41,7 +41,7 @@ class IndexWorker(queue: ConcurrentLinkedQueue[String], debug: Int) extends Thre
     val file = queueRef.poll()
     if (file == null) return
     if (debug >= 1) {
-      println(s"[INFO] Indexing file: $file")
+      println(s"[DEBUG] Indexing file: $file")
     }
     val metadata = getFileMetadata(file)
     if (metadata != null) {
@@ -53,11 +53,11 @@ class IndexWorker(queue: ConcurrentLinkedQueue[String], debug: Int) extends Thre
 
   override def run: Unit = {
     if (debug >= 1) {
-      println("Index Worker thread is running")
+      println("[DEBUG] Index Worker thread is running")
     }
     while (!queueRef.isEmpty) { index }
     if (debug >= 1) {
-      println("Index Worker thread is finished")
+      println("[DEBUG] Index Worker thread is finished")
     }
   }
 
