@@ -1,6 +1,7 @@
 import java.nio.file.{Files, Paths}
 import worker.{ExplorerWorker, IndexWorker}
 import java.util.concurrent.ConcurrentLinkedQueue
+import db.DB
 
 object Main {
 
@@ -11,19 +12,26 @@ object Main {
     val indexers = (1 to 5).map(_ => new IndexWorker(queue))
 
     explorerWorker.start()
-    // Wait for explorer worker to add some files to the queue
-    Thread.sleep(500)
+    Thread.sleep(500) // Wait for explorer worker to add some files to the queue
     indexers.foreach(_.start())
 
     explorerWorker.join()
     indexers.foreach(_.join())
 
-    // TODO: Improve word count aggregation
-    val wordCount = indexers.map(_.getMap).reduce { (a, b) =>
-      a ++ b.map { case (k, v) => k -> (v + a.getOrElse(k, 0)) }
+    val dbPath = Paths.get("indexer.db")
+    val db = new DB(dbPath)
+    try {
+      db.createTable
+      println("[INFO] Resetting database table")
+      db.resetTable
+      println("[INFO] Inserting file metadata into database")
+      db.insertFileMetadataBatch(indexers.flatMap(_.getMetadata).toList)
+    } catch {
+      case e: Exception => println(s"[ERROR] ${e.getMessage}")
+    } finally {
+      println("[INFO] Closing database connection")
+      db.close
     }
-
-    println(s"Word count: ${wordCount.size}")
   }
 
 }
