@@ -2,14 +2,21 @@ import java.nio.file.{Files, Paths}
 import worker.{ExplorerWorker, IndexWorker}
 import java.util.concurrent.ConcurrentLinkedQueue
 import db.DB
+import scala.annotation.static
 
 object Main {
 
-  def main(args: Array[String]): Unit = {
-    val queue = new ConcurrentLinkedQueue[String]()
+  val DEBUG = sys.env.getOrElse("DEBUG", "0").toInt
+  val WORKERS = sys.env.getOrElse("WORKERS", "5").toInt
 
-    val explorerWorker = new ExplorerWorker(".", queue)
-    val indexers = (1 to 5).map(_ => new IndexWorker(queue))
+  def main(args: Array[String]): Unit = {
+    if (DEBUG == 1) {
+      println(s"[DEBUG] Running in debug mode (level = $DEBUG) with $WORKERS workers")
+    }
+
+    val queue = new ConcurrentLinkedQueue[String]()
+    val explorerWorker = new ExplorerWorker(".", queue, DEBUG)
+    val indexers = (1 to WORKERS).map(_ => new IndexWorker(queue, DEBUG))
 
     explorerWorker.start()
     Thread.sleep(500) // Wait for explorer worker to add some files to the queue
@@ -22,14 +29,20 @@ object Main {
     val db = new DB(dbPath)
     try {
       db.createTable
-      println("[INFO] Resetting database table")
+      if (DEBUG >= 2) {
+        println("[INFO] Resetting database table")
+      }
       db.resetTable
-      println("[INFO] Inserting file metadata into database")
+      if (DEBUG >= 2) {
+        println("[INFO] Inserting file metadata into database")
+      }
       db.insertFileMetadataBatch(indexers.flatMap(_.getMetadata).toList)
     } catch {
       case e: Exception => println(s"[ERROR] ${e.getMessage}")
     } finally {
-      println("[INFO] Closing database connection")
+      if (DEBUG >= 2) {
+        println("[INFO] Closing database connection")
+      }
       db.close
     }
   }

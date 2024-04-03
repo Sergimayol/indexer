@@ -9,7 +9,7 @@ import java.nio.file.NoSuchFileException
 
 import file.FileIndexerMetadata
 
-class IndexWorker(queue: ConcurrentLinkedQueue[String]) extends Thread {
+class IndexWorker(queue: ConcurrentLinkedQueue[String], debug: Int) extends Thread {
 
   val queueRef: ConcurrentLinkedQueue[String] = queue
   val files = ListBuffer[FileIndexerMetadata]()
@@ -39,7 +39,10 @@ class IndexWorker(queue: ConcurrentLinkedQueue[String]) extends Thread {
 
   def index: Unit = {
     val file = queueRef.poll()
-    println(s"[INFO] Indexing file: $file")
+    if (file == null) return
+    if (debug >= 1) {
+      println(s"[INFO] Indexing file: $file")
+    }
     val metadata = getFileMetadata(file)
     if (metadata != null) {
       this.files += metadata
@@ -49,9 +52,13 @@ class IndexWorker(queue: ConcurrentLinkedQueue[String]) extends Thread {
   def getMetadata: List[FileIndexerMetadata] = this.files.toList
 
   override def run: Unit = {
-    println("Index Worker thread is running")
+    if (debug >= 1) {
+      println("Index Worker thread is running")
+    }
     while (!queueRef.isEmpty) { index }
-    println("Index Worker thread is finished")
+    if (debug >= 1) {
+      println("Index Worker thread is finished")
+    }
   }
 
 }

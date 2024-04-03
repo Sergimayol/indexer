@@ -3,8 +3,7 @@ package worker
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.io.File
 
-class ExplorerWorker(rootPath: String, queue: ConcurrentLinkedQueue[String])
-    extends Thread {
+class ExplorerWorker(rootPath: String, queue: ConcurrentLinkedQueue[String], debug: Int) extends Thread {
 
   val root: String = rootPath
   val queueRef: ConcurrentLinkedQueue[String] = queue
@@ -20,13 +19,17 @@ class ExplorerWorker(rootPath: String, queue: ConcurrentLinkedQueue[String])
         }
       })
     } catch {
-      case e: Exception => e.printStackTrace()
+      case e: Exception => println(s"[ERROR] ${e.getMessage}")
     }
   }
 
   override def run(): Unit = {
-    println(s"Explorer Worker thread is running with root path: $root")
+    if (debug >= 1) {
+      println(s"[DEBUG] Explorer Worker thread is running with root path: $root")
+    }
     explore(root)
-    println("Explorer Worker thread is finished")
+    if (debug >= 1) {
+      println("[DEBUG] Explorer Worker thread is finished")
+    }
   }
 }
