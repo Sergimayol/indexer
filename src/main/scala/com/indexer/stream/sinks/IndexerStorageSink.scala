@@ -10,8 +10,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 object IndexerStorageSink {
-  private lazy val batchSize = 20
-  def apply(indexerContentService: IndexerContentService): IndexerStorageSink =
+  def apply(indexerContentService: IndexerContentService, batchSize: Int): IndexerStorageSink =
     new IndexerStorageSink(indexerContentService, batchSize)
 }
 

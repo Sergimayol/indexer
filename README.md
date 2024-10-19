@@ -16,25 +16,26 @@ Indexer is a Scala program that allows to get all the file metadata and map it t
 git clone https://github.com/Sergimayol/indexer.git
 ```
 
-2. Compile the project
+2. Configure the `application.conf` settings as you want, by default:
 
-```bash
-sbt clean assembly
+```hocon
+sqlite {
+  url = "jdbc:sqlite:.indexer.db"
+  driver = "org.sqlite.JDBC"
+  connectionPool = disabled
+  keepAliveConnection = true
+}
+
+indexer {
+  initialPath = "./"
+  insertBatchSize = 100
+}
 ```
 
 3. Run the project
 
 ```bash
-java -jar target/scala-3.x.x/indexer.jar <directory> <database>
-```
-
-> [!NOTE]
-> The directory and database args are optional. If not provided, the program will use the current directory.
-
-## Example
-
-```bash
-java -jar target/scala-3.3.1/indexer.jar /home/user/Documents /home/user/Documents/database.db
+sbt run
 ```
 
 ## License
