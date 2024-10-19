@@ -10,6 +10,10 @@ project/**
 .bloop/**
 .bsp/**
 *.db
+.idea/**
 
 !project/build.properties
 !project/plugins.sbt
+
+.vscode
+**/.idea/**
